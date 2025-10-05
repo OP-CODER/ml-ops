@@ -59,15 +59,18 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo "🚀 Applying K8s manifests..."
-                sh """
-                    kubectl apply -f k8s/senttiment-deployment.yml
-                    kubectl apply -f k8s/senttiment-service.yml
-                    kubectl apply -f k8s/fraud-deployment.yml
-                    kubectl apply -f k8s/fraud-service.yml
-                    kubectl apply -f k8s/rag-deployment.yml
-                    kubectl apply -f k8s/rag-service.yml
-                """
+                echo "🚀 Deploying to Kubernetes..."
+                withCredentials([file(credentialsId: 'kubeconfig-docker-desktop', variable: 'KUBECONFIG')]) {
+                    script {
+                        sh """
+                            echo "✅ Using kubeconfig from Jenkins credentials"
+                            kubectl config get-contexts
+                            kubectl get nodes
+                    
+                            echo "🚀 Applying Sentiment manifests..."
+                            kubectl apply -f k8s/senttiment-deployment.yml --validate=false
+                            kubectl apply -f k8s/senttiment-service.yml --validate=false
+                         """
             }
         }
 
