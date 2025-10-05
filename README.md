@@ -41,40 +41,40 @@ Each service:
 ## 📂 Folder Structure
 
 ml-ops/
-├── sentiment/
-│ ├── train.py
-│ ├── serve.py
-│ ├── requirements.txt
-│ └── Dockerfile
-├── fraud/
-│ ├── train.py
-│ ├── serve.py
-│ ├── requirements.txt
-│ └── Dockerfile
-├── rag/
-│ ├── buildindex.py
-│ ├── serve.py
-│ ├── requirements.txt
-│ └── Dockerfile
-├── k8s/
-│ ├── sentiment-deployment.yaml
-│ ├── fraud-deployment.yaml
-│ ├── rag-deployment.yaml
-│ ├── sentiment-service.yaml
-│ ├── fraud-service.yaml
-│ ├── rag-service.yaml
-│ └── monitoring/
-│ ├── prometheus-servicemonitor.yaml
-│ └── grafana-dashboard.json
-├── data/
-│ ├── sentiment_train.csv
-│ └── fraud_train.csv
-├── models/
-│ └── (git-ignored model artifacts)
-├── validate_models.sh
-├── Jenkinsfile
-└── README.md
-
+â”œâ”€â”€ README.md
+â”œâ”€â”€ validate_models.sh
+â”œâ”€â”€ Jenkinsfile
+â”œâ”€â”€ k8s/
+â”‚   â”œâ”€â”€ sentiment-deployment.yaml
+â”‚   â”œâ”€â”€ sentiment-service.yaml
+â”‚   â”œâ”€â”€ fraud-deployment.yaml
+â”‚   â”œâ”€â”€ fraud-service.yaml
+â”‚   â”œâ”€â”€ rag-deployment.yaml
+â”‚   â”œâ”€â”€ rag-service.yaml
+â”‚   â””â”€â”€ monitoring/
+â”‚       â”œâ”€â”€ prometheus-servicemonitor.yaml
+â”‚       â””â”€â”€ grafana-dashboard.json
+â”œâ”€â”€ sentiment/
+â”‚   â”œâ”€â”€ train.py
+â”‚   â”œâ”€â”€ serve.py
+â”‚   â”œâ”€â”€ requirements.txt
+â”‚   â””â”€â”€ Dockerfile
+â”œâ”€â”€ fraud/
+â”‚   â”œâ”€â”€ train.py
+â”‚   â”œâ”€â”€ serve.py
+â”‚   â”œâ”€â”€ requirements.txt
+â”‚   â””â”€â”€ Dockerfile
+â”œâ”€â”€ rag/
+â”‚   â”œâ”€â”€ buildindex.py
+â”‚   â”œâ”€â”€ serve.py
+â”‚   â”œâ”€â”€ requirements.txt
+â”‚   â””â”€â”€ Dockerfile
+â”œâ”€â”€ data/
+â”‚   â”œâ”€â”€ sentiment_train.csv
+â”‚   â””â”€â”€ fraud_train.csv
+â”œâ”€â”€ models/        (gitignored; expected runtime artifacts)
+â””â”€â”€ scripts/
+    â””â”€â”€ helpers.sh
 
 ---
 
