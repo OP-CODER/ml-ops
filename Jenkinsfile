@@ -49,7 +49,6 @@ pipeline {
         stage('Validate Models') {
             steps {
                 echo "🧪 Running model validation..."
-                // Force Linux shell explicitly to avoid CRLF issues
                 sh '''
                     dos2unix validate_models.sh || true
                     bash validate_models.sh
@@ -60,7 +59,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo "🚀 Deploying to Kubernetes..."
-                withCredentials([file(credentialsId: 'kubeconfig-docker-deskto', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'kubeconfig-docker-desktop', variable: 'KUBECONFIG')]) {
                     script {
                         sh '''
                             echo "✅ Using kubeconfig from Jenkins credentials"
@@ -87,17 +86,20 @@ pipeline {
         stage('Post-Deployment Check') {
             steps {
                 echo "🔍 Checking pods & services..."
-                sh '''
-                    kubectl get pods -n default
-                    kubectl get svc -n default
-                '''
+                withCredentials([file(credentialsId: 'kubeconfig-docker-desktop', variable: 'KUBECONFIG')]) {
+                    sh '''
+                        echo "✅ Using kubeconfig from Jenkins credentials"
+                        kubectl get pods -n default
+                        kubectl get svc -n default
+                    '''
+                }
             }
         }
     }
 
     post {
         success {
-            echo "🎉 All models deployed successfully!"
+            echo "✅ All models deployed successfully!"
         }
         failure {
             echo "❌ Pipeline failed. Check Jenkins logs for details."
