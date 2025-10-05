@@ -49,7 +49,11 @@ pipeline {
         stage('Validate Models') {
             steps {
                 echo "🧪 Running model validation..."
-                sh "bash validate_models.sh"
+                // Force Linux shell explicitly
+                sh '''
+                dos2unix validate_models.sh || true
+                bash validate_models.sh
+             '''
             }
         }
 

@@ -1,3 +1,5 @@
-Sentiment: {"label":1,"score":0.99}
+✅ Validation completed successfully!
+🗒 Saving all responses to validation_results.txt...
+Sentiment: {"label":"positive"}
 Fraud: {"label":1,"score":0.99}
 RAG: {"query":"Tell me about Kubernetes","result":"Kubernetes manages container orchestration"}
