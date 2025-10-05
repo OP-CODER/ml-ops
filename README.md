@@ -1,34 +1,153 @@
-# end-to-end-mlops 
- 
-This repository contains minimal runnable code, Dockerfiles, k8s manifests and CI snippets to reproduce the demo from Final-doc-mlops.pdf. 
- 
-## Repo layout 
-end-to-end-mlops/ 
-ÃÄÄ README.md 
-ÃÄÄ validate_models.sh 
-ÃÄÄ Jenkinsfile 
-ÃÄÄ k8s/ 
-³   ÃÄÄ sentiment-deployment.yaml 
-³   ÃÄÄ sentiment-service.yaml 
-³   ÃÄÄ fraud-deployment.yaml 
-³   ÃÄÄ fraud-service.yaml 
-³   ÃÄÄ rag-deployment.yaml 
-³   ÀÄÄ monitoring/ 
-ÃÄÄ sentiment/ 
-³   ÃÄÄ train.py 
-³   ÃÄÄ serve.py 
-³   ÃÄÄ requirements.txt 
-³   ÀÄÄ Dockerfile 
-ÃÄÄ fraud/ 
-³   ÃÄÄ train.py 
-³   ÃÄÄ serve.py 
-³   ÃÄÄ requirements.txt 
-³   ÀÄÄ Dockerfile 
-ÃÄÄ rag/ 
-³   ÃÄÄ buildindex.py 
-³   ÃÄÄ serve.py 
-³   ÃÄÄ requirements.txt 
-³   ÀÄÄ Dockerfile 
-ÃÄÄ models/        (git-ignored; expected artifacts) 
-ÃÄÄ data/          (sample CSVs) 
-ÀÄÄ tests/         (pytest) 
+# ML Ops Project â€” Sentiment, Fraud, and RAG Services
+
+## Overview
+
+This repository contains three machine learning services:
+
+1. **Sentiment Analysis** â€” predicts sentiment from text  
+2. **Fraud Detection** â€” predicts fraud based on features  
+3. **RAG Chatbot** â€” retrieves answers from a document collection  
+
+Each service can run **locally**, in **Docker**, or on **Kubernetes**.
+
+---
+
+## Repo Structure
+
+ml-ops/
+â”œâ”€â”€ README.md
+â”œâ”€â”€ validate_models.sh
+â”œâ”€â”€ k8s/
+â”‚ â”œâ”€â”€ sentiment-deployment.yaml
+â”‚ â”œâ”€â”€ sentiment-service.yaml
+â”‚ â”œâ”€â”€ fraud-deployment.yaml
+â”‚ â”œâ”€â”€ fraud-service.yaml
+â”‚ â”œâ”€â”€ rag-deployment.yaml
+â”‚ â”œâ”€â”€ rag-service.yaml
+â”œâ”€â”€ sentiment/
+â”‚ â”œâ”€â”€ train.py
+â”‚ â”œâ”€â”€ serve.py
+â”‚ â”œâ”€â”€ requirements.txt
+â”‚ â””â”€â”€ Dockerfile
+â”œâ”€â”€ fraud/
+â”‚ â”œâ”€â”€ train.py
+â”‚ â”œâ”€â”€ serve.py
+â”‚ â”œâ”€â”€ requirements.txt
+â”‚ â””â”€â”€ Dockerfile
+â”œâ”€â”€ rag/
+â”‚ â”œâ”€â”€ buildindex.py
+â”‚ â”œâ”€â”€ serve.py
+â”‚ â”œâ”€â”€ requirements.txt
+â”‚ â””â”€â”€ Dockerfile
+â”œâ”€â”€ models/ (trained models will be saved here)
+â””â”€â”€ data/ (sample CSVs or documents)
+
+---
+
+## Step 1 â€” Install Dependencies
+
+```bash
+# Sentiment
+cd sentiment
+pip install -r requirements.txt
+
+# Fraud
+cd ../fraud
+pip install -r requirements.txt
+
+# RAG
+cd ../rag
+pip install -r requirements.txt
+
+Step 2 â€” Train Models / Build Index
+
+# Sentiment
+cd sentiment
+python train.py
+
+# Fraud
+cd ../fraud
+python train.py
+
+# RAG
+cd ../rag
+python buildindex.py
+
+## Step 3 -- Run Services Locally
+# Sentiment
+cd sentiment
+uvicorn serve:app --host 0.0.0.0 --port 8000
+
+# Fraud
+cd ../fraud
+uvicorn serve:app --host 0.0.0.0 --port 8001
+
+# RAG
+cd ../rag
+uvicorn serve:app --host 0.0.0.0 --port 8002
+
+
+## Step 4 -- Validate All Services
+
+# Bash (Linux/WSL/Git Bash)
+bash validate_models.sh
+
+# PowerShell (Windows)
+.\validate_models.ps1
+
+## Step 5 -- Docker
+
+docker build -t sentiment:local ./sentiment
+docker build -t fraud:local ./fraud
+docker build -t rag:local ./rag
+
+docker run -d -p 8000:8000 sentiment:local
+docker run -d -p 8001:8001 fraud:local
+docker run -d -p 8002:8002 rag:local
+
+## Step 6 -- Kubernnetes Deployment
+1. Load local images into Minikube (if using Minikube):
+
+minikube image load sentiment:local
+minikube image load fraud:local
+minikube image load rag:local
+
+
+2. Apply Manifest
+
+kubectl apply -f k8s/sentiment-deployment.yaml
+kubectl apply -f k8s/sentiment-service.yaml
+kubectl apply -f k8s/fraud-deployment.yaml
+kubectl apply -f k8s/fraud-service.yaml
+kubectl apply -f k8s/rag-deployment.yaml
+kubectl apply -f k8s/rag-service.yaml
+
+3. Port-Forwarding For local testing:
+
+kubectl port-forward deployment/sentiment-deployment 8000:8000
+kubectl port-forward deployment/fraud-deployment 8001:8001
+kubectl port-forward deployment/rag-deployment 8002:8002
+
+âœ… You can now access the services at localhost:8000, localhost:8001, and localhost:8002.
+
+
+Step 7 â€” Optional: Monitoring
+
+Prometheus can scrape /health endpoints of each service.
+
+Grafana dashboards can visualize API latency, model accuracy, and RAG metrics.
+
+
+Step 8 â€” CI/CD (Optional)
+
+Use the included Jenkinsfile for automated build, push, and deployment.
+
+Configure credentials for Docker registry and Kubernetes cluster.
+
+Notes
+
+Models: models/ is git-ignored; trained models should be stored here.
+
+Sample Data: place test CSVs or documents in data/.
+
+Secrets/Configs: create Kubernetes secrets or ConfigMaps as needed.
