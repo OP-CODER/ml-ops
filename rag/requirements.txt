@@ -2,3 +2,4 @@ fastapi
 uvicorn
 faiss-cpu
 numpy
+prometheus-fastapi-instrumentator

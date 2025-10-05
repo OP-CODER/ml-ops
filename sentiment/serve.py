@@ -1,19 +1,21 @@
-# sentiment/serve.py
 from fastapi import FastAPI
 import joblib
-from pydantic import BaseModel
+from prometheus_fastapi_instrumentator import Instrumentator
 
-class Payload(BaseModel):
-    text: str
+app = FastAPI(title="Sentiment Analysis API")
 
-app = FastAPI()
-model = joblib.load("models/sentiment.pkl")  # Ensure this exists via train.py
+# Load model
+model = joblib.load("models/sentiment.pkl")
 
 @app.get("/health")
 def health():
-    return {"status":"ok"}
+    return {"status": "ok"}
 
 @app.post("/predict")
-def predict(payload: Payload):
-    pred = model.predict([payload.text])
-    return {"label": int(pred[0]), "score": 0.99}
+def predict(payload: dict):
+    text = payload.get("text", "")
+    pred = model.predict([text])[0]
+    return {"label": "positive" if pred == 1 else "negative"}
+
+# ✅ Enable Prometheus metrics
+Instrumentator().instrument(app).expose(app)

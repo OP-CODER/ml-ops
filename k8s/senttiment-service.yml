@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: sentiment-service
+  namespace: default
+  labels:
+    app: sentiment
 spec:
   selector:
     app: sentiment
   ports:
-    - protocol: TCP
+    - name: http   # 👈 REQUIRED for Prometheus ServiceMonitor
       port: 8000
       targetPort: 8000
   type: ClusterIP

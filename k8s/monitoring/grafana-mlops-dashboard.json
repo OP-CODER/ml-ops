@@ -1,0 +1,118 @@
+{
+  "id": null,
+  "uid": "mlops-api-dashboard",
+  "title": "ML-Ops Model API Metrics",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "row",
+      "title": "Model API Metrics",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Fraud API - Request Rate (req/s)",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"fraud-service\"}[5m]))",
+          "legendFormat": "fraud-service"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Sentiment API - Request Rate (req/s)",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"sentiment-service\"}[5m]))",
+          "legendFormat": "sentiment-service"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "RAG API - Request Rate (req/s)",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"rag-service\"}[5m]))",
+          "legendFormat": "rag-service"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Request Duration (p95, seconds)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~\"fraud-service|sentiment-service|rag-service\"}[5m])) by (le, job))",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 5 },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Requests per Endpoint (5m rate)",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=~\"fraud-service|sentiment-service|rag-service\"}[5m])) by (job, handler)",
+          "legendFormat": "{{job}} - {{handler}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 13 },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "query": "label_values(job)",
+        "sort": 1
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" }
+}

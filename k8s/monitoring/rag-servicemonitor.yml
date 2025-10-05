@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rag-api-sm
+  namespace: default
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: rag
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
