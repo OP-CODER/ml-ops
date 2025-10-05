@@ -24,7 +24,7 @@ pipeline {
                 script {
                     def projects = ["sentiment", "fraud", "rag"]
                     for (p in projects) {
-                        echo "🐳 Building Docker image for ${p}..."
+                        echo "🏗️ Building Docker image for ${p}..."
                         sh """
                             docker build -t ${REGISTRY}/${p}:${IMAGE_TAG} ${p}/
                         """
@@ -49,11 +49,11 @@ pipeline {
         stage('Validate Models') {
             steps {
                 echo "🧪 Running model validation..."
-                // Force Linux shell explicitly
+                // Force Linux shell explicitly to avoid CRLF issues
                 sh '''
-                dos2unix validate_models.sh || true
-                bash validate_models.sh
-             '''
+                    dos2unix validate_models.sh || true
+                    bash validate_models.sh
+                '''
             }
         }
 
@@ -62,32 +62,42 @@ pipeline {
                 echo "🚀 Deploying to Kubernetes..."
                 withCredentials([file(credentialsId: 'kubeconfig-docker-desktop', variable: 'KUBECONFIG')]) {
                     script {
-                        sh """
+                        sh '''
                             echo "✅ Using kubeconfig from Jenkins credentials"
                             kubectl config get-contexts
                             kubectl get nodes
-                    
+
                             echo "🚀 Applying Sentiment manifests..."
                             kubectl apply -f k8s/senttiment-deployment.yml --validate=false
                             kubectl apply -f k8s/senttiment-service.yml --validate=false
-                         """
+
+                            echo "🚀 Applying Fraud manifests..."
+                            kubectl apply -f k8s/fraud-deployment.yml --validate=false
+                            kubectl apply -f k8s/fraud-service.yml --validate=false
+
+                            echo "🚀 Applying RAG manifests..."
+                            kubectl apply -f k8s/rag-deployment.yml --validate=false
+                            kubectl apply -f k8s/rag-service.yml --validate=false
+                        '''
+                    }
+                }
             }
         }
 
         stage('Post-Deployment Check') {
             steps {
                 echo "🔍 Checking pods & services..."
-                sh """
-                    kubectl get pods
-                    kubectl get svc
-                """
+                sh '''
+                    kubectl get pods -n default
+                    kubectl get svc -n default
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "✅ All models deployed successfully!"
+            echo "🎉 All models deployed successfully!"
         }
         failure {
             echo "❌ Pipeline failed. Check Jenkins logs for details."
