@@ -40,32 +40,43 @@ Each service:
 
 ## 📂 Folder Structure
 
+```bash
 ml-ops/
 |-- README.md
 |-- validate_models.sh
 |-- Jenkinsfile
 |-- k8s/
-| |-- sentiment-deployment.yaml
-| |-- sentiment-service.yaml
-| |-- fraud-deployment.yaml
-| |-- fraud-service.yaml
-| |-- rag-deployment.yaml
-| |-- rag-service.yaml
-| -- monitoring/ | |-- prometheus-servicemonitor.yaml | -- grafana-dashboard.json
+|   |-- sentiment-deployment.yaml
+|   |-- sentiment-service.yaml
+|   |-- fraud-deployment.yaml
+|   |-- fraud-service.yaml
+|   |-- rag-deployment.yaml
+|   |-- rag-service.yaml
+|   `-- monitoring/
+|       |-- prometheus-servicemonitor.yaml
+|       `-- grafana-dashboard.json
 |-- sentiment/
-| |-- train.py
-| |-- serve.py
-| |-- requirements.txt
-| -- Dockerfile |-- fraud/ | |-- train.py | |-- serve.py | |-- requirements.txt | -- Dockerfile
+|   |-- train.py
+|   |-- serve.py
+|   |-- requirements.txt
+|   `-- Dockerfile
+|-- fraud/
+|   |-- train.py
+|   |-- serve.py
+|   |-- requirements.txt
+|   `-- Dockerfile
 |-- rag/
-| |-- buildindex.py
-| |-- serve.py
-| |-- requirements.txt
-| -- Dockerfile |-- data/ | |-- sentiment_train.csv | -- fraud_train.csv
-|-- models/ (git-ignored; runtime artifacts)
--- scripts/ -- helpers.sh
-
-
+|   |-- buildindex.py
+|   |-- serve.py
+|   |-- requirements.txt
+|   `-- Dockerfile
+|-- data/
+|   |-- sentiment_train.csv
+|   `-- fraud_train.csv
+|-- models/           (git-ignored; runtime artifacts)
+`-- scripts/
+    `-- helpers.sh
+```
 ---
 
 ## ⚙️ Prerequisites
