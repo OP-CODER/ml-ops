@@ -101,27 +101,27 @@ ml-ops/
 
 ```
 
-## Prerequisites:
+# Prerequisites:
 
-# Install locally
+## Install locally
 
-# Docker (desktop or engine)
+##Docker (desktop or engine)
 
-# kubectl
+## kubectl
 
-# minikube (or Docker Desktop Kubernetes)
+## minikube (or Docker Desktop Kubernetes)
 
-# helm (v3)
+## helm (v3)
 
-# Python 3.10+
+## Python 3.10+
 
-# awscli & eksctl (for EKS steps)
+## awscli & eksctl (for EKS steps)
 
-# Jenkins server (for CI/CD)
+## Jenkins server (for CI/CD)
 
-# (Optional) mlflow, qdrant/weaviate CLI if using vector DBs
+## (Optional) mlflow, qdrant/weaviate CLI if using vector DBs
 
-# Verify
+## Verify
  
 ```
 ---
@@ -155,9 +155,15 @@ cd ml-ops
 
 2) Create a Python venv (optional but recommended)
 
+```bash
+
 python -m venv .venv
+
 source .venv/bin/activate
 
+
+```
+---
 ```
 ---
 
@@ -166,7 +172,6 @@ source .venv/bin/activate
 Each service folder has a train.py that writes model files to models/. Example commands:
 
 ```bash
-
 Sentiment:
 python sentiment/train.py --output models/sentiment.pkl
 
@@ -184,7 +189,6 @@ If you don't have sample data yet, see data/ in the repo for example CSVs. If tr
 4) Build Docker images (local sanity)
 
 ```bash
-
 Each service has a Dockerfile. Run:
 docker build -t sentiment:local ./sentiment
 docker build -t fraud:local ./fraud
@@ -196,7 +200,6 @@ docker build -t rag:local ./rag
 5) Run services locally
 
 ```bash
-
 docker run -d -p 8000:8000 --name sentiment_local sentiment:local
 docker run -d -p 8001:8001 --name fraud_local fraud:local
 docker run -d -p 8002:8002 --name rag_local rag:local
@@ -215,11 +218,15 @@ RAG: http://localhost:8002/docs
 6) Validate with validate_models.sh
 
 Make script executable and run:
+
+```bash
 chmod +x validate_models.sh
 ./validate_models.sh
 
 Expect JSON responses. The script should return non-zero exit codes on failure and write validation_results.txt.
 
+```
+---
 ```
 ---
 
@@ -271,8 +278,6 @@ Example (annotation approach) is included in Deployment templates in Appendix.
 
 4) Ingress & TLS
 
-```bash
-
 For Minikube: use minikube tunnel or port-forward.
 
 For production (EKS): add an Ingress manifest and use cert-manager + ClusterIssuer for TLS. Provide example Ingress YAML in k8s/.
@@ -282,22 +287,28 @@ For production (EKS): add an Ingress manifest and use cert-manager + ClusterIssu
 
 AWS ECR + EKS (cloud)
 
-```bash
 
 1) Build, tag, and push images to ECR
  login (example)
+```bash
 `aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com
 
 create repo (if not exists)
+
+```bash
 `aws ecr create-repository --repository-name ml-ops/sentiment
 
 tag and push
+
+```bash
 `docker tag sentiment:local <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
 `docker push <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
  
 repeat for fraud and rag
 
 2) Create EKS cluster (high-level)
+
+```bash
 eksctl create cluster --name ml-demo --nodes 2 --node-type t3.medium --region <region>
 
 (Adjust node counts/types as needed.)
@@ -312,35 +323,38 @@ Use LoadBalancer service type or Ingress + ALB Ingress Controller (recommended).
 
 Use cert-manager for TLS.
 
-Jenkins CI/CD pipeline
+```
+---
+
+## Jenkins CI/CD pipeline
 
 Add Jenkinsfile at repo root. Minimal improved pipeline (example — included in Appendix):
 
-#Pipeline stages:
+Pipeline stages:
 
-#Checkout
+Checkout
 
-#Run tests (pytest)
+Run tests (pytest)
 
-#Build images
+Build images
 
-#Login to ECR
+Login to ECR
 
-#Push images
+Push images
 
-#Update k8s (kubectl set image ...)
+Update k8s (kubectl set image ...)
 
-#Important Jenkins configuration:
+Important Jenkins configuration:
 
-#Add credentials in Jenkins:
+Add credentials in Jenkins:
 
-#docker-registry-creds (username/password or AWS access keys)
+docker-registry-creds (username/password or AWS access keys)
 
-#kubeconfig or use Jenkins agents with kubectl and proper IAM role
+kubeconfig or use Jenkins agents with kubectl and proper IAM role
 
-#Ensure kubectl, docker, and aws CLIs installed on the agent.
+Ensure kubectl, docker, and aws CLIs installed on the agent.
 
-#Sample Jenkinsfile is included in Appendix — update REGISTRY, ACCOUNT_ID, region, and credentialsId.
+Sample Jenkinsfile is included in Appendix — update REGISTRY, ACCOUNT_ID, region, and credentialsId.
 
 ```
 ---
@@ -379,12 +393,12 @@ Use Loki + promtail or ELK if you prefer. Include a minimal promtail manifest an
 
 # Local Quickstart:
 
-```bash
-
 # local postgres for backend store (example)
+```bash
 docker run -d --name mlflow-postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_USER=mlflow -e POSTGRES_DB=mlflow -p 5432:5432 postgres:13
 
 # start mlflow server (local artifacts to ./mlflow_artifacts)
+```bash
 mlflow server --backend-store-uri postgresql://mlflow:pass@localhost:5432/mlflow --default-artifact-root file:./mlflow_artifacts --host 0.0.0.0 --port 5000
 
 K8s / production:
@@ -429,7 +443,7 @@ Add network policies and authentication to restrict access to vector DB.
 ```
 ---
 
-## Secrets & config (k8s Secrets, ConfigMaps, values.yaml)
+# Secrets & config (k8s Secrets, ConfigMaps, values.yaml)
 
 # Example create secret:
 
