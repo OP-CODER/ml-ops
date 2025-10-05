@@ -324,8 +324,3 @@ Retraining triggers with Jenkins
 ---
 
 That’s it ✅  
-This `README.md` will render beautifully with emojis, headings, code blocks, and tables on GitHub.
-
-Would you like me to generate the **next step** (the ready-to-paste missing minimal files for each folder: `train.py`, `serve.py`, `Dockerfile`, and manifests)?  
-That would make your repo fully runnable and TL-ready.
-
