@@ -58,12 +58,12 @@ pipeline {
             steps {
                 echo "🚀 Applying K8s manifests..."
                 sh """
-                    kubectl apply -f k8s/sentiment-deployment.yaml
-                    kubectl apply -f k8s/sentiment-service.yaml
-                    kubectl apply -f k8s/fraud-deployment.yaml
-                    kubectl apply -f k8s/fraud-service.yaml
-                    kubectl apply -f k8s/rag-deployment.yaml
-                    kubectl apply -f k8s/rag-service.yaml
+                    kubectl apply -f k8s/senttiment-deployment.yml
+                    kubectl apply -f k8s/senttiment-service.yml
+                    kubectl apply -f k8s/fraud-deployment.yml
+                    kubectl apply -f k8s/fraud-service.yml
+                    kubectl apply -f k8s/rag-deployment.yml
+                    kubectl apply -f k8s/rag-service.yml
                 """
             }
         }
