@@ -40,7 +40,6 @@ Each service:
 
 ## 📂 Folder Structure
 
-
 ml-ops/
 |-- README.md
 |-- validate_models.sh
@@ -65,6 +64,7 @@ ml-ops/
 | -- Dockerfile |-- data/ | |-- sentiment_train.csv | -- fraud_train.csv
 |-- models/ (git-ignored; runtime artifacts)
 -- scripts/ -- helpers.sh
+
 
 ---
 
