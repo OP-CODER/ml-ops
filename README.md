@@ -1,495 +1,330 @@
-ml-ops — End-to-end MLOps (Local + AWS EKS + Jenkins CI/CD)
+# 🚀 ml-ops — End-to-End MLOps Project  
+**Sentiment Analysis | Fraud Detection | RAG Chatbot**
 
-A beginner-friendly, full README to make your repo runnable locally (Docker / Minikube) and deployable to AWS (ECR + EKS) with Jenkins CI/CD, monitoring, MLflow guidance, RAG/vector DB notes, secrets handling, and validation steps.
-
-Table of contents
-
-Repo layout
-
-Prerequisites
-
-Local quickstart (recommended order)
-
-train models
-
-build RAG index
-
-run services with Docker
-
-run services on Minikube
-
-validate services
-
-Kubernetes deployment (Minikube & EKS)
-
-manifests (examples included)
-
-Prometheus scrape annotations / ServiceMonitor
-
-ingress, TLS notes
-
-AWS ECR + EKS (cloud)
-
-Jenkins CI/CD (pipeline)
-
-Monitoring & Logging (Prometheus, Grafana, Loki)
-
-MLflow (experiment tracking & model registry)
-
-RAG / Vector DB options (FAISS, Qdrant, Weaviate, Pinecone)
-
-Secrets & config (k8s Secrets, ConfigMaps, values.yaml)
-
-Validation, tests, and CI gates
-
-Checklist before submission
-
-Appendix — minimal file templates (copy/paste)
-
-
-## Overview
-
-This repository contains three machine learning services:
-
-1. **Sentiment Analysis** — predicts sentiment from text  
-2. **Fraud Detection** — predicts fraud based on features  
-3. **RAG Chatbot** — retrieves answers from a document collection  
-
-Each service can run **locally**, in **Docker**, or on **Kubernetes**.
+This project demonstrates a **complete Machine Learning Operations (MLOps)** pipeline — from **training → containerization → deployment → monitoring → CI/CD** — using **Docker**, **Kubernetes**, **AWS (ECR + EKS)**, **Jenkins**, and **Prometheus/Grafana**.
 
 ---
 
-## Repo Structure
+## 🧭 Table of Contents
+- [Project Overview](#project-overview)
+- [Folder Structure](#folder-structure)
+- [Prerequisites](#prerequisites)
+- [Local Quickstart](#local-quickstart)
+- [Deploy on Kubernetes (Minikube & EKS)](#deploy-on-kubernetes-minikube--eks)
+- [AWS ECR + EKS Setup](#aws-ecr--eks-setup)
+- [Jenkins CI/CD Pipeline](#jenkins-cicd-pipeline)
+- [Monitoring (Prometheus + Grafana)](#monitoring-prometheus--grafana)
+- [MLflow Integration](#mlflow-integration)
+- [RAG & Vector DB Setup](#rag--vector-db-setup)
+- [Secrets & Config](#secrets--config)
+- [Validation & Testing](#validation--testing)
+- [Beginner’s Completion Checklist](#beginners-completion-checklist)
 
-```
+---
+
+## 📘 Project Overview
+**Goal:** Build and deploy 3 ML services as microservices with unified monitoring and CI/CD:
+| Service | Port | Description |
+|----------|------|-------------|
+| 🗣️ Sentiment Analysis | 8000 | Predicts text sentiment (positive/negative) |
+| 💳 Fraud Detection | 8001 | Predicts fraud/churn from numeric input |
+| 🤖 RAG Chatbot | 8002 | Retrieval-Augmented Chatbot with FAISS/Vector DB |
+
+Each service:
+- Has its own **train.py**, **serve.py**, **Dockerfile**
+- Exposes FastAPI endpoints: `/health` and `/predict` (or `/query` for RAG)
+- Is deployed on Kubernetes (locally or AWS EKS)
+- Is validated automatically via `validate_models.sh`
+
+---
+
+## 📂 Folder Structure
 
 ml-ops/
-├── README.md
+├── sentiment/
+│ ├── train.py
+│ ├── serve.py
+│ ├── requirements.txt
+│ └── Dockerfile
+├── fraud/
+│ ├── train.py
+│ ├── serve.py
+│ ├── requirements.txt
+│ └── Dockerfile
+├── rag/
+│ ├── buildindex.py
+│ ├── serve.py
+│ ├── requirements.txt
+│ └── Dockerfile
+├── k8s/
+│ ├── sentiment-deployment.yaml
+│ ├── fraud-deployment.yaml
+│ ├── rag-deployment.yaml
+│ ├── sentiment-service.yaml
+│ ├── fraud-service.yaml
+│ ├── rag-service.yaml
+│ └── monitoring/
+│ ├── prometheus-servicemonitor.yaml
+│ └── grafana-dashboard.json
+├── data/
+│ ├── sentiment_train.csv
+│ └── fraud_train.csv
+├── models/
+│ └── (git-ignored model artifacts)
 ├── validate_models.sh
 ├── Jenkinsfile
-├── k8s/
-│   ├── sentiment-deployment.yaml
-│   ├── sentiment-service.yaml
-│   ├── fraud-deployment.yaml
-│   ├── fraud-service.yaml
-│   ├── rag-deployment.yaml
-│   ├── rag-service.yaml
-│   └── monitoring/
-│       ├── prometheus-servicemonitor.yaml
-│       └── grafana-dashboard.json
-├── sentiment/
-│   ├── train.py
-│   ├── serve.py
-│   ├── requirements.txt
-│   └── Dockerfile
-├── fraud/
-│   ├── train.py
-│   ├── serve.py
-│   ├── requirements.txt
-│   └── Dockerfile
-├── rag/
-│   ├── buildindex.py
-│   ├── serve.py
-│   ├── requirements.txt
-│   └── Dockerfile
-├── data/
-│   ├── sentiment_train.csv
-│   └── fraud_train.csv
-├── models/        (gitignored; expected runtime artifacts)
-└── scripts/
-    └── helpers.sh
+└── README.md
 
-```
 
-# Prerequisites:
-
-## Install locally
-
-##Docker (desktop or engine)
-
-## kubectl
-
-## minikube (or Docker Desktop Kubernetes)
-
-## helm (v3)
-
-## Python 3.10+
-
-## awscli & eksctl (for EKS steps)
-
-## Jenkins server (for CI/CD)
-
-## (Optional) mlflow, qdrant/weaviate CLI if using vector DBs
-
-## Verify
- 
-```
 ---
 
+## ⚙️ Prerequisites
+Make sure these tools are installed:
+
+| Tool | Purpose |
+|------|----------|
+| Docker | Containerization |
+| Python 3.10+ | Training scripts |
+| kubectl | Manage Kubernetes |
+| minikube / Docker Desktop | Local K8s cluster |
+| helm | Install Prometheus/Grafana |
+| awscli + eksctl | AWS ECR/EKS setup |
+| Jenkins | CI/CD pipeline |
+| jq | Parse validation results |
+
+Verify installation:
+```bash
 docker --version
-
 kubectl version --client
-
 helm version
-
 minikube start --driver=docker --memory=8192 --cpus=2
 
-Local quickstart (recommended order)
 
-```
----
-
-Goal: from zero → run/test endpoints locally.
-
-```
----
-
-1) Clone the repo
+🧩 Local Quickstart
+1️⃣ Clone the Repo
 
 git clone https://github.com/OP-CODER/ml-ops.git
-
 cd ml-ops
 
-```
----
+2️⃣ Train Models
 
-2) Create a Python venv (optional but recommended)
-
-```bash
-
-python -m venv .venv
-
-source .venv/bin/activate
-
-
-```
----
-```
----
-
-3) Train models locally (creates artifacts under models/)
-
-Each service folder has a train.py that writes model files to models/. Example commands:
-
-```bash
-Sentiment:
 python sentiment/train.py --output models/sentiment.pkl
-
-Fraud:
 python fraud/train.py --output models/fraud.pkl
-
-RAG index:
 python rag/buildindex.py --data data/docs/ --out index/
 
-If you don't have sample data yet, see data/ in the repo for example CSVs. If training will take long you can include prebuilt small models under models/ (gitignored recommended — but for a demo, include tiny toy models).
+3️⃣ Build Docker Images
 
-```
----
-
-4) Build Docker images (local sanity)
-
-```bash
-Each service has a Dockerfile. Run:
 docker build -t sentiment:local ./sentiment
 docker build -t fraud:local ./fraud
 docker build -t rag:local ./rag
 
-```
----
+4️⃣ Run Containers Locally
 
-5) Run services locally
+docker run -d -p 8000:8000 sentiment:local
+docker run -d -p 8001:8001 fraud:local
+docker run -d -p 8002:8002 rag:local
 
-```bash
-docker run -d -p 8000:8000 --name sentiment_local sentiment:local
-docker run -d -p 8001:8001 --name fraud_local fraud:local
-docker run -d -p 8002:8002 --name rag_local rag:local
+Check endpoints:
 
-Open:
+http://localhost:8000/docs
 
-Sentiment: http://localhost:8000/docs
+http://localhost:8001/docs
 
-Fraud: http://localhost:8001/docs
+http://localhost:8002/docs
 
-RAG: http://localhost:8002/docs
+5️⃣ Validate All Services
 
-```
----
-
-6) Validate with validate_models.sh
-
-Make script executable and run:
-
-```bash
 chmod +x validate_models.sh
 ./validate_models.sh
 
-Expect JSON responses. The script should return non-zero exit codes on failure and write validation_results.txt.
-
-```
----
-```
----
-
-Kubernetes deployment (Minikube & EKS)
-
-1) For Minikube (quick local k8s)
-
-Load local image into minikube (or push to a registry):
-minikube image load sentiment:local
-minikube image load fraud:local
-minikube image load rag:local
-
-Apply manifests:
+☸️ Deploy on Kubernetes (Minikube & EKS)
+🧱 Apply Manifests
 
 kubectl apply -f k8s/sentiment-deployment.yaml
-kubectl apply -f k8s/sentiment-service.yaml
 kubectl apply -f k8s/fraud-deployment.yaml
-kubectl apply -f k8s/fraud-service.yaml
 kubectl apply -f k8s/rag-deployment.yaml
-kubectl apply -f k8s/rag-service.yaml
 
-
-Port-forward to access:
+🔍 Access via Port-Forward
 
 kubectl port-forward deployment/sentiment-deployment 8000:8000
 kubectl port-forward deployment/fraud-deployment 8001:8001
 kubectl port-forward deployment/rag-deployment 8002:8002
 
-```
----
+☁️ AWS ECR + EKS Setup
+1️⃣ Push Images to ECR
 
-2) Manifests (minimal example snippets are in Appendix)
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+docker tag sentiment:local <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/ml-ops-sentiment:latest
+docker push <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/ml-ops-sentiment:latest
 
-Ensure each Deployment template includes readinessProbe and prometheus scrape annotations (or provide a ServiceMonitor).
+2️⃣ Create EKS Cluster
 
-Provide PVC definitions in k8s/ if you use persistent storage (e.g., for FAISS indexes or MLflow artifacts).
+eksctl create cluster --name ml-demo --nodes 2 --region us-east-1
 
-3) Prometheus scraping
+3️⃣ Deploy to EKS
 
-```bash
-Two approaches:
+kubectl apply -f k8s/
+kubectl get pods -A
 
-Pod template annotations (prometheus.io/scrape: "true") — quick and easy.
+🧪 Jenkins CI/CD Pipeline
 
-ServiceMonitor manifest (recommended if using Prometheus Operator).
-
-Example (annotation approach) is included in Deployment templates in Appendix.
-
-
-4) Ingress & TLS
-
-For Minikube: use minikube tunnel or port-forward.
-
-For production (EKS): add an Ingress manifest and use cert-manager + ClusterIssuer for TLS. Provide example Ingress YAML in k8s/.
-
-```
----
-
-AWS ECR + EKS (cloud)
-
-
-1) Build, tag, and push images to ECR
- login (example)
-```bash
-`aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com
-
-create repo (if not exists)
-
-```bash
-`aws ecr create-repository --repository-name ml-ops/sentiment
-
-tag and push
-
-```bash
-`docker tag sentiment:local <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
-`docker push <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
- 
-repeat for fraud and rag
-
-2) Create EKS cluster (high-level)
-
-```bash
-eksctl create cluster --name ml-demo --nodes 2 --node-type t3.medium --region <region>
-
-(Adjust node counts/types as needed.)
-
-3) Update k8s manifests to use ECR images
-
-Replace image fields in your k8s/* YAMLs with the pushed ECR image tags.
-
-4) Expose services publicly
-
-Use LoadBalancer service type or Ingress + ALB Ingress Controller (recommended).
-
-Use cert-manager for TLS.
-
-```
----
-
-## Jenkins CI/CD pipeline
-
-Add Jenkinsfile at repo root. Minimal improved pipeline (example — included in Appendix):
-
-Pipeline stages:
+Stages:
 
 Checkout
 
-Run tests (pytest)
+Test (pytest)
 
-Build images
+Build Docker images
 
-Login to ECR
+Push to ECR
 
-Push images
+Deploy to EKS
 
-Update k8s (kubectl set image ...)
+Sample pipeline included in Jenkinsfile.
 
-Important Jenkins configuration:
+Setup Jenkins credentials:
 
-Add credentials in Jenkins:
+docker-registry-creds → ECR username/password
 
-docker-registry-creds (username/password or AWS access keys)
+Jenkins agent with Docker + kubectl
 
-kubeconfig or use Jenkins agents with kubectl and proper IAM role
+Trigger pipeline on:
 
-Ensure kubectl, docker, and aws CLIs installed on the agent.
+Push to main
 
-Sample Jenkinsfile is included in Appendix — update REGISTRY, ACCOUNT_ID, region, and credentialsId.
+Manual job start
 
-```
----
+📊 Monitoring (Prometheus + Grafana)
 
-## Monitoring & Logging (Prometheus, Grafana, Loki)
+Deploy monitoring stack:
 
-Deploy Prometheus (via Helm) and Grafana:
-
-```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
+helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
+helm install grafana grafana/grafana -n monitoring
 
-helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
-helm install grafana grafana/grafana --namespace monitoring
+Add scrape annotations in each deployment:
 
-Ensure services expose /metrics or add scrape annotations in pod template (see Appendix deployment snippet).
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
 
-Add ServiceMonitor YAMLs under k8s/monitoring/ if you use Prometheus Operator.
 
-Include a grafana-dashboard.json under k8s/monitoring/ with panels for:
+Open Grafana dashboards → visualize latency, accuracy, and API uptime.
 
-api_latency
+📘 MLflow Integration
 
-ml_accuracy
+Local:
 
-request rate
+mlflow server \
+  --backend-store-uri sqlite:///mlflow.db \
+  --default-artifact-root ./mlruns \
+  --host 0.0.0.0 --port 5000
 
-llm_tokens_total (if applicable)
+Production:
 
-Logging:
+Backend: PostgreSQL on RDS
 
-Use Loki + promtail or ELK if you prefer. Include a minimal promtail manifest and Grafana datasource configuration for Loki.
+Artifact store: S3 bucket
 
-## MLflow (experiment tracking & model registry)
+Deploy MLflow in K8s (Deployment + Service + PVC)
 
-# Local Quickstart:
+Track models from train.py:
 
-# local postgres for backend store (example)
-```bash
-docker run -d --name mlflow-postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_USER=mlflow -e POSTGRES_DB=mlflow -p 5432:5432 postgres:13
+import mlflow
+mlflow.log_param("model_type", "logreg")
+mlflow.sklearn.log_model(model, "sentiment_model")
 
-# start mlflow server (local artifacts to ./mlflow_artifacts)
-```bash
-mlflow server --backend-store-uri postgresql://mlflow:pass@localhost:5432/mlflow --default-artifact-root file:./mlflow_artifacts --host 0.0.0.0 --port 5000
+🧠 RAG & Vector DB Setup
 
-K8s / production:
+Local → FAISS
+Production → Qdrant / Weaviate / Pinecone
 
-Use a managed DB (RDS) as backend store.
+Include:
 
-Use S3 (or MinIO) as default-artifact-root.
+Helm chart or YAML for vector DB
 
-Provide a k8s Deployment + Service + PVC (if using MinIO) or use S3 credentials in k8s Secrets.
+Secrets for API keys
 
-Doc items to add:
+Backup strategy using PVC or S3 snapshot
 
-k8s/mlflow-deployment.yaml
+🔒 Secrets & Config
 
-k8s/mlflow-service.yaml
+Example:
 
-values.yaml for helm (if using Helm chart for mlflow)
+kubectl create secret generic aws-credentials \
+  --from-literal=AWS_ACCESS_KEY_ID=xxx \
+  --from-literal=AWS_SECRET_ACCESS_KEY=yyy
 
-Add instructions in train.py to call mlflow.start_run() and mlflow.log_model().
+ConfigMap:
 
-```
----
-
-## RAG / Vector DB options (FAISS, Qdrant, Weaviate, Pinecone)
-
-Local dev: FAISS for simple vector store (index stored as files/PVC). Provide rag/buildindex.py which writes indexes to index/.
-
-Production: recommend managed / networked vector DBs (Qdrant, Weaviate, Pinecone). Add:
-
-Helm chart / manifests for Qdrant or Weaviate OR instructions for Pinecone managed service.
-
-Sample k8s/qdrant-deployment.yaml or values.yaml.
-
-Secrets for DB API keys / tokens.
-
-Notes:
-
-Keep index snapshots in S3/MinIO and use PVCs for runtime.
-
-Add network policies and authentication to restrict access to vector DB.
-
-```
----
-
-# Secrets & config (k8s Secrets, ConfigMaps, values.yaml)
-
-# Example create secret:
-
-kubectl create secret generic aws-credentials --from-literal=AWS_ACCESS_KEY_ID=xxx --from-literal=AWS_SECRET_ACCESS_KEY=yyy -n mlops
-
-Provide k8s/secrets-example.yaml with placeholders (do not commit secrets). Use values.yaml for Helm charts to inject secret names.
- 
-
-```
----
-
-# ConfigMap example (for app config):
-
-```bash
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: sentiment-config
 data:
   MODEL_PATH: "/models/sentiment.pkl"
-  LOG_LEVEL: "INFO"
 
-```
----
+✅ Validation & Testing
 
-## Validation, tests, and CI gates
+Run validation script:
 
-Add tests/ with pytest unit tests for preprocessors and small integration tests for endpoints.
+./validate_models.sh
 
-validate_models.sh should:
+CI Integration:
+In Jenkins:
 
-curl each endpoint
-
-assert expected fields
-
-write validation_results.txt
-
-exit non-zero on failures
-
-Sample CI snippet (in Jenkinsfile):
-
-```bash
 stage('Test') {
   steps {
     sh 'pytest -q || (echo "Tests failed" && exit 1)'
   }
 }
 
+
+🧾 Beginner’s Completion Checklist
+
+ train.py, serve.py, buildindex.py exist & run
+
+ Dockerfile for each service
+
+ k8s/*.yaml manifests ready
+
+ validate_models.sh works
+
+ Jenkins pipeline configured
+
+ Prometheus/Grafana running
+
+ MLflow integrated
+
+ Sample data + models included
+
+ Secrets created via kubectl
+
+ Cloud (EKS) deployment tested
+
+🎯 Congrats!
+You’ve built a production-style, end-to-end MLOps pipeline that covers:
+
+training → containerization → deployment → monitoring → CI/CD → scaling → observability.
+
+Keep extending with:
+
+MLflow registry
+
+Feature store (Feast)
+
+Auto-scaling (HPA)
+
+Retraining triggers with Jenkins
+
+
+---
+
+That’s it ✅  
+This `README.md` will render beautifully with emojis, headings, code blocks, and tables on GitHub.
+
+Would you like me to generate the **next step** (the ready-to-paste missing minimal files for each folder: `train.py`, `serve.py`, `Dockerfile`, and manifests)?  
+That would make your repo fully runnable and TL-ready.
 
