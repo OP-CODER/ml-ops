@@ -18,29 +18,29 @@ ml-ops/
 ├── README.md
 ├── validate_models.sh
 ├── k8s/
-│ ├── sentiment-deployment.yaml
-│ ├── sentiment-service.yaml
-│ ├── fraud-deployment.yaml
-│ ├── fraud-service.yaml
-│ ├── rag-deployment.yaml
-│ ├── rag-service.yaml
+│   ├── sentiment-deployment.yaml
+│   ├── sentiment-service.yaml
+│   ├── fraud-deployment.yaml
+│   ├── fraud-service.yaml
+│   ├── rag-deployment.yaml
+│   └── rag-service.yaml
 ├── sentiment/
-│ ├── train.py
-│ ├── serve.py
-│ ├── requirements.txt
-│ └── Dockerfile
+│   ├── train.py
+│   ├── serve.py
+│   ├── requirements.txt
+│   └── Dockerfile
 ├── fraud/
-│ ├── train.py
-│ ├── serve.py
-│ ├── requirements.txt
-│ └── Dockerfile
+│   ├── train.py
+│   ├── serve.py
+│   ├── requirements.txt
+│   └── Dockerfile
 ├── rag/
-│ ├── buildindex.py
-│ ├── serve.py
-│ ├── requirements.txt
-│ └── Dockerfile
-├── models/ (trained models will be saved here)
-└── data/ (sample CSVs or documents)
+│   ├── buildindex.py
+│   ├── serve.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── models/       (trained models will be saved here)
+└── data/         (sample CSVs or documents)
 
 ---
 
@@ -60,7 +60,7 @@ cd ../rag
 pip install -r requirements.txt
 
 Step 2 — Train Models / Build Index
-
+```bash
 # Sentiment
 cd sentiment
 python train.py
@@ -73,7 +73,8 @@ python train.py
 cd ../rag
 python buildindex.py
 
-## Step 3 -- Run Services Locally
+Step 3 — Run Services Locally
+```bash
 # Sentiment
 cd sentiment
 uvicorn serve:app --host 0.0.0.0 --port 8000
@@ -87,16 +88,16 @@ cd ../rag
 uvicorn serve:app --host 0.0.0.0 --port 8002
 
 
-## Step 4 -- Validate All Services
-
+Step 4 — Validate All Services
+```bash
 # Bash (Linux/WSL/Git Bash)
 bash validate_models.sh
 
 # PowerShell (Windows)
 .\validate_models.ps1
 
-## Step 5 -- Docker
-
+Step 5 — Docker
+```bash
 docker build -t sentiment:local ./sentiment
 docker build -t fraud:local ./fraud
 docker build -t rag:local ./rag
@@ -105,7 +106,8 @@ docker run -d -p 8000:8000 sentiment:local
 docker run -d -p 8001:8001 fraud:local
 docker run -d -p 8002:8002 rag:local
 
-## Step 6 -- Kubernnetes Deployment
+Step 6 — Kubernetes Deployment
+```bash
 1. Load local images into Minikube (if using Minikube):
 
 minikube image load sentiment:local
@@ -132,14 +134,14 @@ kubectl port-forward deployment/rag-deployment 8002:8002
 
 
 Step 7 — Optional: Monitoring
-
+```bash
 Prometheus can scrape /health endpoints of each service.
 
 Grafana dashboards can visualize API latency, model accuracy, and RAG metrics.
 
 
 Step 8 — CI/CD (Optional)
-
+```bash
 Use the included Jenkinsfile for automated build, push, and deployment.
 
 Configure credentials for Docker registry and Kubernetes cluster.
