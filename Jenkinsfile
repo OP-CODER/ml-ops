@@ -59,7 +59,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo "🚀 Deploying to Kubernetes..."
-                withCredentials([file(credentialsId: 'kubeconfig-docker-desktop', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'kubeconfig-docker-deskto', variable: 'KUBECONFIG')]) {
                     script {
                         sh '''
                             echo "✅ Using kubeconfig from Jenkins credentials"
@@ -86,7 +86,7 @@ pipeline {
         stage('Post-Deployment Check') {
             steps {
                 echo "🔍 Checking pods & services..."
-                withCredentials([file(credentialsId: 'kubeconfig-docker-desktop', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'kubeconfig-docker-deskto', variable: 'KUBECONFIG')]) {
                     sh '''
                         echo "✅ Using kubeconfig from Jenkins credentials"
                         kubectl get pods -n default
