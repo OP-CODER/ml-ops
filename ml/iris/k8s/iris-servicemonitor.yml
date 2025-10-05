@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: iris-servicemonitor
+  namespace: default
+  labels:
+    release: prometheus   # 👈 must match your Helm release name
+spec:
+  selector:
+    matchLabels:
+      app: iris           # 👈 must match your Service label
+  endpoints:
+    - port: metrics       # 👈 must match the Service port name
+      interval: 15s

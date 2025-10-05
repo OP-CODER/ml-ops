@@ -1,0 +1,3 @@
+Sentiment: {"label":1,"score":0.99}
+Fraud: {"label":1,"score":0.99}
+RAG: {"query":"Tell me about Kubernetes","result":"Kubernetes manages container orchestration"}

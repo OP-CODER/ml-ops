@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: iris-metrics-service
+  namespace: default          # Replace if your pods are in another namespace
+  labels:
+    app: iris
+spec:
+  selector:
+    app: iris                 # Must match the pod label in deployment
+  ports:
+    - name: metrics
+      port: 8001              # Prometheus will scrape this port
+      targetPort: 8001

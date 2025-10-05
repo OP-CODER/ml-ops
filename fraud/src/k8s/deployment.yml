@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraudchurn-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraudchurn
+  template:
+    metadata:
+      labels:
+        app: fraudchurn
+    spec:
+      containers:
+      - name: fraud-churn
+        image: fraud-churn:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fraudchurn-service
+spec:
+  selector:
+    app: fraudchurn
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8001
+  type: ClusterIP

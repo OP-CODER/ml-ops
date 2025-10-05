@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+scikit-learn
+joblib
+mlflow  # optional; remove if you don't use mlflow
