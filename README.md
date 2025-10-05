@@ -40,6 +40,7 @@ Each service:
 
 ## 📂 Folder Structure
 
+
 ml-ops/
 |-- README.md
 |-- validate_models.sh
