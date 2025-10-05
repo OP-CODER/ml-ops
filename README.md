@@ -14,6 +14,8 @@ Each service can run **locally**, in **Docker**, or on **Kubernetes**.
 
 ## Repo Structure
 
+```
+
 ml-ops/
 ├── README.md
 ├── validate_models.sh
@@ -59,6 +61,8 @@ pip install -r requirements.txt
 cd ../rag
 pip install -r requirements.txt
 
+---
+
 ## Step 2 — Train Models / Build Index
 
 ```bash
@@ -73,6 +77,8 @@ python train.py
 # RAG
 cd ../rag
 python buildindex.py
+
+---
 
 ## Step 3 — Run Services Locally
 
@@ -89,6 +95,7 @@ uvicorn serve:app --host 0.0.0.0 --port 8001
 cd ../rag
 uvicorn serve:app --host 0.0.0.0 --port 8002
 
+---
 
 ## Step 4 — Validate All Services
 
@@ -98,6 +105,8 @@ bash validate_models.sh
 
 # PowerShell (Windows)
 .\validate_models.ps1
+
+---
 
 ## Step 5 — Docker
 
@@ -109,6 +118,8 @@ docker build -t rag:local ./rag
 docker run -d -p 8000:8000 sentiment:local
 docker run -d -p 8001:8001 fraud:local
 docker run -d -p 8002:8002 rag:local
+
+---
 
 ## Step 6 — Kubernetes Deployment
 
@@ -137,6 +148,7 @@ kubectl port-forward deployment/rag-deployment 8002:8002
 
 ✅ You can now access the services at localhost:8000, localhost:8001, and localhost:8002.
 
+---
 
 ## Step 7 — Optional: Monitoring
 
@@ -145,6 +157,7 @@ Prometheus can scrape /health endpoints of each service.
 
 Grafana dashboards can visualize API latency, model accuracy, and RAG metrics.
 
+---
 
 ## Step 8 — CI/CD (Optional)
 
