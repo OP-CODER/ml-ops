@@ -49,7 +49,6 @@ pipeline {
         stage('Validate Models') {
             steps {
                 echo "🧪 Running model validation..."
-                sh "bash scripts/helpers.sh"
                 sh "bash validate_models.sh"
             }
         }
