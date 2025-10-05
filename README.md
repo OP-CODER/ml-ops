@@ -101,27 +101,27 @@ ml-ops/
 
 ```
 
-### Prerequisites
+## Prerequisites:
 
-## Install locally:
+# Install locally
 
-## Docker (desktop or engine)
+# Docker (desktop or engine)
 
-## kubectl
+# kubectl
 
-## minikube (or Docker Desktop Kubernetes)
+# minikube (or Docker Desktop Kubernetes)
 
-## helm (v3)
+# helm (v3)
 
-## Python 3.10+
+# Python 3.10+
 
-## awscli & eksctl (for EKS steps)
+# awscli & eksctl (for EKS steps)
 
-## Jenkins server (for CI/CD)
+# Jenkins server (for CI/CD)
 
-## (Optional) mlflow, qdrant/weaviate CLI if using vector DBs
+# (Optional) mlflow, qdrant/weaviate CLI if using vector DBs
 
-## Verify
+# Verify
  
 ```
 ---
@@ -136,6 +136,9 @@ minikube start --driver=docker --memory=8192 --cpus=2
 
 Local quickstart (recommended order)
 
+```
+---
+
 Goal: from zero → run/test endpoints locally.
 
 ```
@@ -144,6 +147,7 @@ Goal: from zero → run/test endpoints locally.
 1) Clone the repo
 
 git clone https://github.com/OP-CODER/ml-ops.git
+
 cd ml-ops
 
 ```
@@ -161,8 +165,8 @@ source .venv/bin/activate
 
 Each service folder has a train.py that writes model files to models/. Example commands:
 
-```
-bash
+```bash
+
 Sentiment:
 python sentiment/train.py --output models/sentiment.pkl
 
@@ -179,6 +183,8 @@ If you don't have sample data yet, see data/ in the repo for example CSVs. If tr
 
 4) Build Docker images (local sanity)
 
+```bash
+
 Each service has a Dockerfile. Run:
 docker build -t sentiment:local ./sentiment
 docker build -t fraud:local ./fraud
@@ -188,6 +194,8 @@ docker build -t rag:local ./rag
 ---
 
 5) Run services locally
+
+```bash
 
 docker run -d -p 8000:8000 --name sentiment_local sentiment:local
 docker run -d -p 8001:8001 --name fraud_local fraud:local
@@ -216,6 +224,7 @@ Expect JSON responses. The script should return non-zero exit codes on failure a
 ---
 
 Kubernetes deployment (Minikube & EKS)
+
 1) For Minikube (quick local k8s)
 
 Load local image into minikube (or push to a registry):
@@ -249,6 +258,8 @@ Ensure each Deployment template includes readinessProbe and prometheus scrape an
 Provide PVC definitions in k8s/ if you use persistent storage (e.g., for FAISS indexes or MLflow artifacts).
 
 3) Prometheus scraping
+
+```bash
 Two approaches:
 
 Pod template annotations (prometheus.io/scrape: "true") — quick and easy.
@@ -257,10 +268,10 @@ ServiceMonitor manifest (recommended if using Prometheus Operator).
 
 Example (annotation approach) is included in Deployment templates in Appendix.
 
-```
----
 
 4) Ingress & TLS
+
+```bash
 
 For Minikube: use minikube tunnel or port-forward.
 
@@ -270,17 +281,21 @@ For production (EKS): add an Ingress manifest and use cert-manager + ClusterIssu
 ---
 
 AWS ECR + EKS (cloud)
+
+```bash
+
 1) Build, tag, and push images to ECR
  login (example)
-aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com
+`aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com
 
- create repo (if not exists)
-aws ecr create-repository --repository-name ml-ops/sentiment
+create repo (if not exists)
+`aws ecr create-repository --repository-name ml-ops/sentiment
 
- tag and push
-docker tag sentiment:local <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
-docker push <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
- repeat for fraud and rag
+tag and push
+`docker tag sentiment:local <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
+`docker push <ACCOUNT_ID>.dkr.ecr.<region>.amazonaws.com/ml-ops/sentiment:latest
+ 
+repeat for fraud and rag
 
 2) Create EKS cluster (high-level)
 eksctl create cluster --name ml-demo --nodes 2 --node-type t3.medium --region <region>
@@ -301,35 +316,38 @@ Jenkins CI/CD pipeline
 
 Add Jenkinsfile at repo root. Minimal improved pipeline (example — included in Appendix):
 
-Pipeline stages:
+#Pipeline stages:
 
-Checkout
+#Checkout
 
-Run tests (pytest)
+#Run tests (pytest)
 
-Build images
+#Build images
 
-Login to ECR
+#Login to ECR
 
-Push images
+#Push images
 
-Update k8s (kubectl set image ...)
+#Update k8s (kubectl set image ...)
 
-Important Jenkins configuration:
+#Important Jenkins configuration:
 
-Add credentials in Jenkins:
+#Add credentials in Jenkins:
 
-docker-registry-creds (username/password or AWS access keys)
+#docker-registry-creds (username/password or AWS access keys)
 
-kubeconfig or use Jenkins agents with kubectl and proper IAM role
+#kubeconfig or use Jenkins agents with kubectl and proper IAM role
 
-Ensure kubectl, docker, and aws CLIs installed on the agent.
+#Ensure kubectl, docker, and aws CLIs installed on the agent.
 
-Sample Jenkinsfile is included in Appendix — update REGISTRY, ACCOUNT_ID, region, and credentialsId.
+#Sample Jenkinsfile is included in Appendix — update REGISTRY, ACCOUNT_ID, region, and credentialsId.
+
+```
+---
 
 ## Monitoring & Logging (Prometheus, Grafana, Loki)
 
-# Deploy Prometheus (via Helm) and Grafana:
+Deploy Prometheus (via Helm) and Grafana:
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -362,6 +380,7 @@ Use Loki + promtail or ELK if you prefer. Include a minimal promtail manifest an
 # Local Quickstart:
 
 ```bash
+
 # local postgres for backend store (example)
 docker run -d --name mlflow-postgres -e POSTGRES_PASSWORD=pass -e POSTGRES_USER=mlflow -e POSTGRES_DB=mlflow -p 5432:5432 postgres:13
 
