@@ -44,6 +44,8 @@ ml-ops/
 ├── models/       (trained models will be saved here)
 └── data/         (sample CSVs or documents)
 
+
+```
 ---
 
 ## Step 1 — Install Dependencies
