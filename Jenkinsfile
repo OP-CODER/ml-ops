@@ -2,62 +2,89 @@ pipeline {
     agent any
 
     environment {
-        // Docker settings
-        DOCKER_REGISTRY = "docker.io/anas974"
+        REGISTRY = "docker.io/anas974"
         IMAGE_TAG = "latest"
-        DOCKER_PATH = "C:/Program Files/Docker/Docker/resources/bin/docker.exe"
+        KUBECONFIG = "$HOME/.kube/config"
+    }
 
-        // Kubernetes settings
-        KUBECTL_PATH = "C:/Program Files/Docker/Docker/resources/bin/kubectl.exe"
-        KUBECONFIG = "C:/Users/mohda/.kube/config.full"
-        K8S_CONTEXT = "docker-desktop"
+    options {
+        timestamps()
     }
 
     stages {
-        stage('Deploy Multiple ML Projects') {
+        stage('Checkout Code') {
+            steps {
+                echo "📦 Pulling latest code from GitHub..."
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Images') {
             steps {
                 script {
-                    // Define all projects
-                    def projects = [
-                        [name: "iris", path: "ml\\iris"],
-                        [name: "sentiment", path: "ml\\sentiment"],
-                        [name: "fraud_churn", path: "ml\\fraud_churn"],
-                        [name: "rag_chatbot", path: "ml\\rag_chatbot"]
-                    ]
-
-                    // Loop through each project
-                    for (proj in projects) {
-                        echo "=============================="
-                        echo "🚀 Deploying ${proj.name}..."
-                        echo "=============================="
-
-                        // Build Docker image
-                        bat "\"%DOCKER_PATH%\" build -t %DOCKER_REGISTRY%/${proj.name}:%IMAGE_TAG% ${proj.path}"
-
-                        // Push Docker image
-                        bat "\"%DOCKER_PATH%\" push %DOCKER_REGISTRY%/${proj.name}:%IMAGE_TAG%"
-
-                        // Deploy to Kubernetes
-                        bat "\"%KUBECTL_PATH%\" apply -f ${proj.path}\\k8s\\deployment.yml --kubeconfig=%KUBECONFIG% --context=%K8S_CONTEXT%"
-                        bat "\"%KUBECTL_PATH%\" apply -f ${proj.path}\\k8s\\service.yml --kubeconfig=%KUBECONFIG% --context=%K8S_CONTEXT%"
-
-                        // Optional: Validate deployment
-                        bat "\"%KUBECTL_PATH%\" get pods -l app=${proj.name} --kubeconfig=%KUBECONFIG% --context=%K8S_CONTEXT%"
-                        bat "\"%KUBECTL_PATH%\" get svc ${proj.name} --kubeconfig=%KUBECONFIG% --context=%K8S_CONTEXT%"
-
-                        echo "✅ ${proj.name} deployed successfully!"
+                    def projects = ["sentiment", "fraud", "rag"]
+                    for (p in projects) {
+                        echo "🐳 Building Docker image for ${p}..."
+                        sh """
+                            docker build -t ${REGISTRY}/${p}:${IMAGE_TAG} ${p}/
+                        """
                     }
                 }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${REGISTRY}/sentiment:${IMAGE_TAG}
+                        docker push ${REGISTRY}/fraud:${IMAGE_TAG}
+                        docker push ${REGISTRY}/rag:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Validate Models') {
+            steps {
+                echo "🧪 Running model validation..."
+                sh "bash scripts/helpers.sh"
+                sh "bash validate_models.sh"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo "🚀 Applying K8s manifests..."
+                sh """
+                    kubectl apply -f k8s/sentiment-deployment.yaml
+                    kubectl apply -f k8s/sentiment-service.yaml
+                    kubectl apply -f k8s/fraud-deployment.yaml
+                    kubectl apply -f k8s/fraud-service.yaml
+                    kubectl apply -f k8s/rag-deployment.yaml
+                    kubectl apply -f k8s/rag-service.yaml
+                """
+            }
+        }
+
+        stage('Post-Deployment Check') {
+            steps {
+                echo "🔍 Checking pods & services..."
+                sh """
+                    kubectl get pods
+                    kubectl get svc
+                """
             }
         }
     }
 
     post {
         success {
-            echo "🎉 All projects deployed successfully!"
+            echo "✅ All models deployed successfully!"
         }
         failure {
-            echo "❌ Pipeline failed! Check logs for errors."
+            echo "❌ Pipeline failed. Check Jenkins logs for details."
         }
     }
 }
