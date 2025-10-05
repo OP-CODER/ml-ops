@@ -60,7 +60,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo "🚀 Deploying to Kubernetes..."
-                withCredentials([file(credentialsId: 'kubeconfig-docker-desktop', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'kubeconfig-docker-deskto', variable: 'KUBECONFIG')]) {
                     script {
                         sh '''
                             echo "✅ Using kubeconfig from Jenkins credentials"
