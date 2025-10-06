@@ -1,5 +1,12 @@
-venv/
+.env
+k8s/secrets.yml
+*.pem
+*.key
 __pycache__/
+data/
+models/
+mlruns/
+venv/
 *.pt
 *.safetensors
 *.ckpt
